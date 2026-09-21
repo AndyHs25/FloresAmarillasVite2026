@@ -6,50 +6,24 @@ import { createBouquetMarkup, createPetalsMarkup } from './components'
 const app = document.querySelector<HTMLDivElement>('#app')!
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
 const isGiftPage = window.location.pathname.replace(/\/$/, '') === `${basePath}/flores`
-let musicContext: AudioContext | null = null
-let musicTimer: number | null = null
-let musicStep = 0
-
-const melody = [261.63, 329.63, 392, 523.25, 392, 329.63, 293.66, 392]
-
-function playMelodyNote(): void {
-  if (!musicContext) return
-  const oscillator = musicContext.createOscillator()
-  const noteGain = musicContext.createGain()
-  const now = musicContext.currentTime
-  oscillator.type = 'sine'
-  oscillator.frequency.value = melody[musicStep % melody.length]
-  noteGain.gain.setValueAtTime(0, now)
-  noteGain.gain.linearRampToValueAtTime(0.055, now + 0.08)
-  noteGain.gain.exponentialRampToValueAtTime(0.001, now + 1.7)
-  oscillator.connect(noteGain)
-  noteGain.connect(musicContext.destination)
-  oscillator.start(now)
-  oscillator.stop(now + 1.8)
-  musicStep += 1
-  musicTimer = window.setTimeout(playMelodyNote, 900)
-}
-
-function stopMusic(): void {
-  if (musicTimer !== null) window.clearTimeout(musicTimer)
-  musicTimer = null
-  musicContext?.close()
-  musicContext = null
-  musicStep = 0
-}
+let backgroundAudio: HTMLAudioElement | null = null
 
 async function toggleMusic(button: HTMLButtonElement): Promise<void> {
-  if (musicContext) {
-    stopMusic()
+  if (!backgroundAudio) return
+  if (!backgroundAudio.paused) {
+    backgroundAudio.pause()
     button.textContent = '♫ Activar música'
     button.setAttribute('aria-pressed', 'false')
     return
   }
-  musicContext = new AudioContext()
-  await musicContext.resume()
-  playMelodyNote()
-  button.textContent = '♫ Pausar música'
-  button.setAttribute('aria-pressed', 'true')
+  try {
+    await backgroundAudio.play()
+    button.textContent = '♫ Pausar música'
+    button.setAttribute('aria-pressed', 'true')
+  } catch {
+    button.textContent = '♫ Activar música'
+    button.setAttribute('aria-pressed', 'false')
+  }
 }
 
 function renderHome(): void {
@@ -177,6 +151,9 @@ function renderGift(): void {
           <p>Que nunca te falten motivos para sonreír.</p>
         </div>
       </section>
+      <audio id="background-audio" loop preload="auto">
+        <source src="${basePath}/s__s_s_mp3.mp3" type="audio/mpeg" />
+      </audio>
       <div class="gift-tools">
         <button id="music-toggle" class="music-button" type="button" aria-pressed="false">♫ Activar música</button>
       </div>
@@ -184,6 +161,8 @@ function renderGift(): void {
     </main>
   `
   document.querySelector<HTMLElement>('.gift-name')!.textContent = name ? `Para ${name}` : 'Unas flores amarillas para ti'
+  backgroundAudio = document.querySelector<HTMLAudioElement>('#background-audio')
+  if (backgroundAudio) backgroundAudio.volume = 0.35
   document.querySelector<HTMLButtonElement>('#music-toggle')!.addEventListener('click', (event) => {
     void toggleMusic(event.currentTarget as HTMLButtonElement)
   })
