@@ -4,7 +4,8 @@ import { createGiftUrl } from './url'
 import { createBouquetMarkup, createPetalsMarkup } from './components'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
-const isGiftPage = window.location.pathname.replace(/\/$/, '') === '/flores'
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+const isGiftPage = window.location.pathname.replace(/\/$/, '') === `${basePath}/flores`
 let musicContext: AudioContext | null = null
 let musicTimer: number | null = null
 let musicStep = 0
@@ -154,7 +155,7 @@ function renderGift(): void {
   app.innerHTML = `
     <main class="gift-shell">
       ${createPetalsMarkup()}
-      <a class="back-link" href="/" aria-label="Volver a crear un regalo">← Crear otro regalo</a>
+      <a class="back-link" href="${basePath}/" aria-label="Volver a crear un regalo">← Crear otro regalo</a>
       <section class="gift-content" aria-labelledby="gift-title">
         <p class="eyebrow gift-eyebrow"><span class="eyebrow-dot"></span>Un detalle para ti</p>
         <h1 id="gift-title"><span class="gift-name"></span> <span aria-hidden="true">💛</span></h1>

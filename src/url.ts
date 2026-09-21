@@ -1,3 +1,4 @@
 export function createGiftUrl(name: string): string {
-  return `${window.location.origin}/flores?nombre=${encodeURIComponent(name)}`
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+  return `${window.location.origin}${basePath}/flores?nombre=${encodeURIComponent(name)}`
 }
